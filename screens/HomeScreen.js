@@ -1,48 +1,37 @@
-// /screens/HomeScreen.js
+// HomeScreen.js
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import OrdersScreen from './OrdersScreen';
 import CategoryScreen from './CategoryScreen';
-import { auth } from '../firebase/firebaseConfig';
+import LogoutScreen from '../components/LogoutScreen'; // Import LogoutScreen
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
-const HomeScreen = ({ navigation }) => {
-  const handleLogout = () => {
-    auth.signOut().then(() => navigation.navigate('Login'));
-  };
+const HomeTabs = () => (
+  <Tab.Navigator
+    screenOptions={{
+      headerShown: false,
+      tabBarActiveTintColor: '#007BFF',
+      tabBarInactiveTintColor: '#888',
+      tabBarStyle: { backgroundColor: '#fff', borderTopColor: '#eee', borderTopWidth: 1 },
+    }}
+  >
+    <Tab.Screen name="Categories" component={CategoryScreen} />
+    <Tab.Screen name="Orders" component={OrdersScreen} />
+  </Tab.Navigator>
+);
 
-  return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#007BFF',
-        tabBarInactiveTintColor: '#888',
-        tabBarStyle: { backgroundColor: '#fff', borderTopColor: '#eee', borderTopWidth: 1 },
-      }}
-    >
-   
-      <Tab.Screen name="Categories" component={CategoryScreen} />
-      <Tab.Screen name="Orders" component={OrdersScreen} />
-      <Tab.Screen
-        name="Logout"
-        component={() => (
-          <View style={styles.logoutContainer}>
-            <Button title="Logout" onPress={handleLogout} color="#FF6347" />
-          </View>
-        )}
-      />
-    </Tab.Navigator>
-  );
-};
-
-const styles = StyleSheet.create({
-  logoutContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
+const HomeScreen = () => (
+  <Stack.Navigator
+    screenOptions={{
+      headerShown: false, // Hide headers for all screens in this stack
+    }}
+  >
+    <Stack.Screen name="HomeTabs" component={HomeTabs} />
+    <Stack.Screen name="Logout" component={LogoutScreen} />
+  </Stack.Navigator>
+);
 
 export default HomeScreen;

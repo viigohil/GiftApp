@@ -1,32 +1,39 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { firestore } from '../firebase/firebaseConfig';
-import { collection, getDocs } from 'firebase/firestore';
+// /screens/CategoryScreen.js
+import React from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-const CategoryScreen = ({ navigation }) => {
-  const [categories, setCategories] = useState([]);
+// Local images for categories
+const localImages = {
+  flowers: require('../assets/flowers.jpg'),
+  photoFrames: require('../assets/photoframe.jpg'),
+  toys: require('../assets/toys.jpg'),
+  candles: require('../assets/candels.jpg'),
+  jewelry: require('../assets/jewelry.jpg'),
+  books: require('../assets/books.jpg'),
+};
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const categoryCollection = collection(firestore, 'category');
-        const categorySnapshot = await getDocs(categoryCollection);
-        const categoriesList = categorySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setCategories(categoriesList);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
+const { width } = Dimensions.get('window'); // Get the width of the screen
 
-    fetchCategories();
-  }, []);
+const CategoryScreen = () => {
+  const navigation = useNavigation();
+
+  // Categories with local images
+  const categories = [
+    { id: '1', name: 'Flowers', image: localImages.flowers },
+    { id: '2', name: 'Photo Frames', image: localImages.photoFrames },
+    { id: '3', name: 'Toys', image: localImages.toys },
+    { id: '4', name: 'Candles', image: localImages.candles },
+    { id: '5', name: 'Jewelry', image: localImages.jewelry },
+    { id: '6', name: 'Books', image: localImages.books },
+  ];
 
   const renderCategoryItem = ({ item }) => (
     <TouchableOpacity
       style={styles.categoryCard}
       onPress={() => navigation.navigate('ProductList', { category: item.name })}
     >
-      <Image source={{ uri: item.imageUrl }} style={styles.categoryImage} />
+      <Image source={item.image} style={styles.categoryImage} />
       <Text style={styles.categoryText}>{item.name}</Text>
     </TouchableOpacity>
   );
@@ -38,7 +45,6 @@ const CategoryScreen = ({ navigation }) => {
         data={categories}
         keyExtractor={(item) => item.id}
         renderItem={renderCategoryItem}
-        numColumns={2}
         contentContainerStyle={styles.listContainer}
       />
     </View>
@@ -58,21 +64,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   listContainer: {
-    justifyContent: 'space-between',
+    paddingBottom: 16,
   },
   categoryCard: {
     backgroundColor: '#fff',
     borderRadius: 8,
     elevation: 2,
-    margin: 8,
+    marginVertical: 8,
     padding: 8,
     alignItems: 'center',
-    flex: 1,
-    maxWidth: '48%',
+    width: width - 32, // Fit to screen width minus padding
+    alignSelf: 'center', // Center the card horizontally
   },
   categoryImage: {
     width: '100%',
-    height: 100,
+    height: 200, // Increased height to fit screen better
     borderRadius: 8,
     marginBottom: 8,
     resizeMode: 'cover',

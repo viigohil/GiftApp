@@ -1,25 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { firestore, auth } from '../firebase/firebaseConfig';
-import { collection, query, where, getDocs, doc, getDoc, updateDoc, arrayUnion, setDoc } from 'firebase/firestore';
+// /screens/ProductList.js
+import React, { useEffect, useState } from 'react'; // Add useEffect here
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert } from 'react-native';
+import { useRoute } from '@react-navigation/native';
+import { firestore } from '../firebase/firebaseConfig';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
-const ProductList = ({ route }) => {
-  const { category } = route.params; // Get category from route params
+const ProductList = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const route = useRoute();
+  const { category } = route.params;
 
-  useEffect(() => {
+  useEffect(() => { // Ensure useEffect is imported
     const fetchProducts = async () => {
       try {
-        const productsCollection = collection(firestore, 'products');
-        const productsQuery = query(productsCollection, where('category', '==', category));
-        const productsSnapshot = await getDocs(productsQuery);
-        const productsList = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const productsRef = collection(firestore, 'products');
+        const q = query(productsRef, where('category', '==', category));
+        const querySnapshot = await getDocs(q);
+
+        const productsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setProducts(productsList);
       } catch (error) {
+        setError('Error fetching products.');
         console.error('Error fetching products:', error);
-        setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -28,74 +32,31 @@ const ProductList = ({ route }) => {
     fetchProducts();
   }, [category]);
 
-  const handleAddToCart = async (productId) => {
-    try {
-      const user = auth.currentUser;
-      if (user) {
-        const cartRef = doc(firestore, 'carts', user.uid);
-        const cartDoc = await getDoc(cartRef);
-        if (!cartDoc.exists()) {
-          await setDoc(cartRef, { items: [] });
-        }
-        await updateDoc(cartRef, {
-          items: arrayUnion(productId) // Add productId to cart
-        });
-        Alert.alert('Success', 'Product added to cart!');
-      } else {
-        Alert.alert('Error', 'You must be logged in to add items to the cart.');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Error adding to cart.');
-      console.error('Error adding to cart:', error);
-    }
-  };
-
   const renderProductItem = ({ item }) => (
-    <View style={styles.productCard}>
+    <TouchableOpacity
+      style={styles.productCard}
+      onPress={() => navigation.navigate('ProductDetail', { productId: item.id })}
+    >
       <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
       <Text style={styles.productName}>{item.name}</Text>
       <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
-      <Text style={styles.productDescription}>{item.description}</Text>
-      <TouchableOpacity style={styles.button} onPress={() => handleAddToCart(item.id)}>
-        <Text style={styles.buttonText}>Add to Cart</Text>
-      </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#007BFF" />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.error}>Error: {error}</Text>
-      </View>
-    );
-  }
-
-  if (!products.length) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.error}>No products found</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{category}</Text>
-      <FlatList
-        data={products}
-        keyExtractor={(item) => item.id}
-        renderItem={renderProductItem}
-        numColumns={2}
-        contentContainerStyle={styles.listContainer}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#007BFF" />
+      ) : error ? (
+        <Text style={styles.error}>{error}</Text>
+      ) : (
+        <FlatList
+          data={products}
+          keyExtractor={item => item.id}
+          renderItem={renderProductItem}
+          contentContainerStyle={styles.listContainer}
+        />
+      )}
     </View>
   );
 };
@@ -104,66 +65,39 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f9f9f9',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    textAlign: 'center',
+    backgroundColor: '#f0f0f0',
   },
   listContainer: {
-    justifyContent: 'space-between',
+    paddingBottom: 16,
   },
   productCard: {
     backgroundColor: '#fff',
     borderRadius: 8,
     elevation: 2,
-    margin: 8,
+    marginVertical: 8,
     padding: 8,
     alignItems: 'center',
-    flex: 1,
-    maxWidth: '48%',
   },
   productImage: {
     width: '100%',
-    height: 100,
+    height: 200,
     borderRadius: 8,
     marginBottom: 8,
     resizeMode: 'cover',
   },
   productName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    marginBottom: 4,
   },
   productPrice: {
-    fontSize: 14,
-    color: '#666',
-  },
-  productDescription: {
-    fontSize: 14,
-    color: '#555',
-    marginBottom: 8,
-  },
-  button: {
-    backgroundColor: '#007BFF',
-    borderRadius: 4,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  buttonText: {
-    color: '#fff',
     fontSize: 16,
-    textAlign: 'center',
+    color: '#007BFF',
   },
   error: {
-    fontSize: 16,
     color: 'red',
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 16,
   },
 });
 

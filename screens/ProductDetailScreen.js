@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, Button, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { firestore, auth } from '../firebase/firebaseConfig';
-import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-const ProductDetailScreen = ({ route, navigation }) => {
+const ProductDetailScreen = ({ route }) => {
   const { productId } = route.params;
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,15 +12,16 @@ const ProductDetailScreen = ({ route, navigation }) => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const docRef = doc(firestore, 'productdetails', productId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProduct(docSnap.data());
+        const productRef = doc(firestore, 'products', productId);
+        const productDoc = await getDoc(productRef);
+
+        if (productDoc.exists()) {
+          setProduct(productDoc.data());
         } else {
-          setError('No such document!');
+          setError('Product not found.');
         }
       } catch (error) {
-        setError('Error fetching product!');
+        setError('Error fetching product.');
         console.error('Error fetching product:', error);
       } finally {
         setLoading(false);
@@ -35,55 +36,54 @@ const ProductDetailScreen = ({ route, navigation }) => {
       const user = auth.currentUser;
       if (user) {
         const cartRef = doc(firestore, 'carts', user.uid);
-        await updateDoc(cartRef, {
-          items: arrayUnion(productId) // Add productId to cart
-        });
-        Alert.alert('Success', 'Product added to cart!');
+        const cartDoc = await getDoc(cartRef);
+
+        if (cartDoc.exists()) {
+          // Document exists, update it
+          const cartData = cartDoc.data();
+          const productIds = cartData.items || [];
+
+          await setDoc(cartRef, {
+            items: [...productIds, productId]
+          }, { merge: true }); // Merge to avoid overwriting other fields
+
+          Alert.alert('Success', 'Product added to cart!');
+        } else {
+          // Document does not exist, create it
+          await setDoc(cartRef, {
+            items: [productId]
+          });
+
+          Alert.alert('Success', 'Product added to cart!');
+        }
       } else {
         Alert.alert('Error', 'You must be logged in to add items to the cart.');
       }
     } catch (error) {
-      Alert.alert('Error', 'Error adding to cart.');
-      console.error('Error adding to cart:', error);
+      Alert.alert('Error', 'Error adding product to cart.');
+      console.error('Error adding product to cart:', error);
     }
   };
 
   if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#007BFF" />
-      </View>
-    );
+    return <ActivityIndicator size="large" color="#007BFF" />;
   }
 
   if (error) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.error}>{error}</Text>
-      </View>
-    );
-  }
-
-  if (!product) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.error}>Product not found</Text>
-      </View>
-    );
+    return <Text style={styles.error}>{error}</Text>;
   }
 
   return (
     <View style={styles.container}>
-      <Image source={{ uri: product.imageUrl }} style={styles.image} />
-      <Text style={styles.title}>{product.name}</Text>
-      <Text style={styles.description}>{product.description}</Text>
-      <Text style={styles.detail}>Category: {product.category}</Text>
-      <Text style={styles.detail}>Colors: {product.colors ? product.colors.join(', ') : 'N/A'}</Text>
-      <Text style={styles.detail}>Price: ${product.price.toFixed(2)}</Text>
-      <Text style={styles.detail}>Reviews: {product.reviews ? product.reviews.join(', ') : 'N/A'}</Text>
-      <TouchableOpacity style={styles.button} onPress={handleAddToCart}>
-        <Text style={styles.buttonText}>Add to Cart</Text>
-      </TouchableOpacity>
+      {product && (
+        <>
+          <Image source={{ uri: product.imageUrl }} style={styles.productImage} />
+          <Text style={styles.productName}>{product.name}</Text>
+          <Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
+          <Text style={styles.productDescription}>{product.description}</Text>
+          <Button title="Add to Cart" onPress={handleAddToCart} color="#007BFF" />
+        </>
+      )}
     </View>
   );
 };
@@ -92,48 +92,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f0f0f0',
   },
-  image: {
+  productImage: {
     width: '100%',
-    height: 200,
+    height: 300,
     borderRadius: 8,
     marginBottom: 16,
     resizeMode: 'cover',
   },
-  title: {
+  productName: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 8,
   },
-  description: {
-    fontSize: 16,
-    marginBottom: 16,
-    color: '#555',
-  },
-  detail: {
-    fontSize: 14,
-    color: '#333',
+  productPrice: {
+    fontSize: 20,
+    color: '#007BFF',
     marginBottom: 8,
   },
-  button: {
-    backgroundColor: '#007BFF',
-    borderRadius: 4,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  buttonText: {
-    color: '#fff',
+  productDescription: {
     fontSize: 16,
-    textAlign: 'center',
+    marginBottom: 16,
   },
   error: {
-    fontSize: 16,
     color: 'red',
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 16,
   },
 });
 
