@@ -3,6 +3,11 @@ import { View, Text, Image, Button, ActivityIndicator, Alert, StyleSheet } from 
 import { firestore, auth } from '../firebase/firebaseConfig';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
+// Define local image sources
+const imageSources = {
+  default: require('../assets/gifts.jpg'), // Default image for missing local images
+};
+
 const ProductDetailScreen = ({ route }) => {
   const { productId } = route.params;
   const [product, setProduct] = useState(null);
@@ -73,11 +78,17 @@ const ProductDetailScreen = ({ route }) => {
     return <Text style={styles.error}>{error}</Text>;
   }
 
+  // Ensure imageUrl exists
+  const imageUrl = product?.imageUrl || '';
+  const imageSource = imageUrl.startsWith('http')
+    ? { uri: imageUrl }
+    : imageSources.default;
+
   return (
     <View style={styles.container}>
       {product && (
         <>
-          <Image source={{ uri: product.imageUrl }} style={styles.productImage} />
+          <Image source={imageSource} style={styles.productImage} />
           <Text style={styles.productName}>{product.name}</Text>
           <Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
           <Text style={styles.productDescription}>{product.description}</Text>
