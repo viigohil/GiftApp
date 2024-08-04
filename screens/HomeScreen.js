@@ -1,10 +1,9 @@
-// HomeScreen.js
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import OrdersScreen from './OrdersScreen';
 import CategoryScreen from './CategoryScreen';
-import LogoutScreen from '../components/LogoutScreen'; // Import LogoutScreen
+import LogoutScreen from '../components/LogoutScreen'; // Ensure the path is correct
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();

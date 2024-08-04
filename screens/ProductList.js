@@ -1,4 +1,3 @@
-// /screens/ProductList.js
 import React, { useEffect, useState } from 'react'; // Add useEffect here
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
@@ -67,9 +66,6 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#f0f0f0',
   },
-  listContainer: {
-    paddingBottom: 16,
-  },
   productCard: {
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -88,11 +84,14 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 4,
+    color: '#333',
   },
   productPrice: {
     fontSize: 16,
     color: '#007BFF',
+  },
+  listContainer: {
+    paddingBottom: 16,
   },
   error: {
     color: 'red',

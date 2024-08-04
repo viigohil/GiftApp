@@ -1,12 +1,11 @@
-// /screens/SignupScreen.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase/firebaseConfig';
 
 const SignupScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const auth = getAuth();
 
   const handleSignup = async () => {
     try {
@@ -37,7 +36,11 @@ const SignupScreen = ({ navigation }) => {
         autoCapitalize="none"
       />
       <Button title="Sign Up" onPress={handleSignup} color="#007BFF" />
-      <Button title="Go to Login" onPress={() => navigation.navigate('Login')} color="#28a745" />
+      <Button
+        title="Go to Login"
+        onPress={() => navigation.navigate('Login')}
+        color="#28a745"
+      />
     </View>
   );
 };

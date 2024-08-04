@@ -1,26 +1,24 @@
-// LoginScreen.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'; // Import Firebase authentication
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const auth = getAuth(); // Initialize Firebase authentication
+  const auth = getAuth();
 
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Navigate to HomeScreen after successful login
-      navigation.navigate('Home');
+      navigation.navigate('Home'); // Navigate to HomeScreen after successful login
     } catch (error) {
-      Alert.alert('Login Error', error.message); // Display error message if login fails
+      Alert.alert('Login Error', error.message);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.header}>Login</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -37,7 +35,12 @@ const LoginScreen = ({ navigation }) => {
         secureTextEntry
         autoCapitalize="none"
       />
-      <Button title="Login" onPress={handleLogin} />
+      <Button title="Login" onPress={handleLogin} color="#007BFF" />
+      <Button
+        title="Go to Sign Up"
+        onPress={() => navigation.navigate('Signup')}
+        color="#28a745"
+      />
     </View>
   );
 };
@@ -47,18 +50,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 16,
+    backgroundColor: '#f0f0f0',
   },
-  title: {
+  header: {
     fontSize: 24,
-    marginBottom: 16,
+    fontWeight: 'bold',
+    marginBottom: 24,
     textAlign: 'center',
   },
   input: {
     height: 40,
     borderColor: '#ccc',
     borderWidth: 1,
+    borderRadius: 5,
     marginBottom: 12,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
   },
 });
 

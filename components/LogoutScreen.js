@@ -1,27 +1,19 @@
-// /components/LogoutScreen.js
 import React from 'react';
-import { View, Text, Button, Alert, StyleSheet } from 'react-native';
-import { getAuth, signOut } from 'firebase/auth';
+import { View, Text, Button, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const LogoutScreen = () => {
   const navigation = useNavigation();
-  const auth = getAuth();
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      navigation.navigate('Login');
-    } catch (error) {
-      Alert.alert('Error', 'An error occurred while logging out.');
-      console.error('Logout error:', error);
-    }
+  const handleLogout = () => {
+    // Add your logout logic here (e.g., clearing tokens, redirecting)
+    navigation.navigate('HomeTabs'); // Navigate back to HomeTabs after logout
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.message}>Are you sure you want to log out?</Text>
-      <Button title="Logout" onPress={handleLogout} color="#007BFF" />
+      <Text style={styles.text}>You have been logged out.</Text>
+      <Button title="Go to Home" onPress={() => navigation.navigate('HomeTabs')} />
     </View>
   );
 };
@@ -30,13 +22,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    padding: 16,
-    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
   },
-  message: {
+  text: {
     fontSize: 18,
-    marginBottom: 16,
-    textAlign: 'center',
+    marginBottom: 20,
   },
 });
 
