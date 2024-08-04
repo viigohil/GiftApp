@@ -1,17 +1,24 @@
-import React, { useEffect, useState } from 'react'; // Add useEffect here
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { firestore } from '../firebase/firebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
+
+// Define local image sources
+const imageSources = {
+  product2: require('../assets/images/Rose.jpg'),
+  default: require('../assets/gifts.jpg'), // Default image for missing local images
+};
 
 const ProductList = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [imageError, setImageError] = useState({});
   const route = useRoute();
   const { category } = route.params;
 
-  useEffect(() => { // Ensure useEffect is imported
+  useEffect(() => {
     const fetchProducts = async () => {
       try {
         const productsRef = collection(firestore, 'products');
@@ -31,16 +38,33 @@ const ProductList = ({ navigation }) => {
     fetchProducts();
   }, [category]);
 
-  const renderProductItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.productCard}
-      onPress={() => navigation.navigate('ProductDetail', { productId: item.id })}
-    >
-      <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
-      <Text style={styles.productName}>{item.name}</Text>
-      <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
-    </TouchableOpacity>
-  );
+  const handleImageError = (id) => {
+    setImageError(prev => ({ ...prev, [id]: true }));
+  };
+
+  const renderProductItem = ({ item }) => {
+    // Ensure item.imageUrl exists
+    const imageUrl = item.imageUrl || '';
+    const imageSource = imageUrl.startsWith('http')
+      ? { uri: imageUrl }
+      : imageSources[imageUrl] || imageSources.default;
+
+    return (
+      <TouchableOpacity
+        style={styles.productCard}
+        onPress={() => navigation.navigate('ProductDetail', { productId: item.id })}
+      >
+        <Image
+          source={imageSource}
+          style={styles.productImage}
+          onError={() => handleImageError(item.id)}
+        />
+        {imageError[item.id] && <Text style={styles.error}>Failed to load image</Text>}
+        <Text style={styles.productName}>{item.name}</Text>
+        <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
