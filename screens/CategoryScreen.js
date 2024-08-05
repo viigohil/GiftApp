@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#ffb5ad',
   },
   header: {
     fontSize: 24,
@@ -73,12 +73,12 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     padding: 8,
     alignItems: 'center',
-    width: width - 32, // Fit to screen width minus padding
-    alignSelf: 'center', // Center the card horizontally
+    width: width - 32,
+    alignSelf: 'center', 
   },
   categoryImage: {
     width: '100%',
-    height: 200, // Increased height to fit screen better
+    height: 200,
     borderRadius: 8,
     marginBottom: 8,
     resizeMode: 'cover',

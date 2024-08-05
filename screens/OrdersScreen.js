@@ -38,7 +38,7 @@ const OrdersScreen = () => {
           }
         } catch (error) {
           console.error('Error fetching cart items:', error);
-          setError(error.message);
+          setError('Error fetching cart items.');
         } finally {
           setLoading(false);
         }
@@ -80,17 +80,12 @@ const OrdersScreen = () => {
                   const cartData = cartDoc.data();
                   const productIds = cartData.items || [];
 
+                  // Remove product from cart
                   await updateDoc(cartRef, {
                     items: productIds.filter(id => id !== productId)
                   });
 
-                  // Update order status in orders collection
-                  const orderRef = doc(firestore, 'orders', productId);
-                  await updateDoc(orderRef, {
-                    status: 'Purchased'
-                  });
-
-                  Alert.alert('Success', 'Product marked as purchased!');
+                  Alert.alert('Success', 'Product removed from cart.');
                   fetchCartItems(); // Refresh the cart items
                 } else {
                   Alert.alert('Error', 'Cart does not exist.');
@@ -99,8 +94,8 @@ const OrdersScreen = () => {
                 Alert.alert('Error', 'You must be logged in to modify cart.');
               }
             } catch (error) {
-              Alert.alert('Error', 'Error marking product as purchased.');
-              console.error('Error marking product as purchased:', error);
+              Alert.alert('Error', 'Error removing product from cart.');
+              console.error('Error removing product from cart:', error);
             }
           },
         },
@@ -121,6 +116,7 @@ const OrdersScreen = () => {
           const cartData = cartDoc.data();
           const productIds = cartData.items || [];
 
+          // Remove product from cart
           await updateDoc(cartRef, {
             items: productIds.filter(id => id !== productId)
           });
@@ -190,7 +186,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#ffb5ad',
   },
   listContainer: {
     paddingBottom: 16,

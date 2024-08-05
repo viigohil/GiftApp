@@ -125,12 +125,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#ffb5ad',
   },
   content: {
     alignItems: 'center',
     width: '100%',
-    maxWidth: 400, // Optional: to limit width on larger screens
+    maxWidth: 400, 
   },
   productImage: {
     width: '100%',
