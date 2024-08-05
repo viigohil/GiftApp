@@ -3,6 +3,10 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, 
 import { auth, firestore } from '../firebase/firebaseConfig';
 import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 
+const imageSources = {
+  default: require('../assets/gifts.jpg'), 
+};
+
 // OrdersScreen Component
 const OrdersScreen = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -140,18 +144,25 @@ const OrdersScreen = () => {
     // Ensure `price` is a number before calling `toFixed`
     const price = typeof item.price === 'number' ? item.price : parseFloat(item.price);
 
+    // Determine image source
+    const imageSource = item.imageUrl && item.imageUrl.startsWith('http')
+      ? { uri: item.imageUrl }
+      : imageSources.default;
+
     return (
       <View style={styles.itemContainer}>
-        <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
+        <Image source={imageSource} style={styles.productImage} />
         <View style={styles.itemDetails}>
           <Text style={styles.itemTitle}>{item.name}</Text>
           <Text style={styles.itemPrice}>${isNaN(price) ? 'N/A' : price.toFixed(2)}</Text>
-          <TouchableOpacity style={styles.button} onPress={() => handleBuy(item.id)}>
-            <Text style={styles.buttonText}>Buy</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => handleCancel(item.id)}>
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={() => handleBuy(item.id)}>
+              <Text style={styles.buttonText}>Buy</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => handleCancel(item.id)}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     );
@@ -179,7 +190,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f8f8f8',
   },
   listContainer: {
     paddingBottom: 16,
@@ -187,16 +198,16 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    borderRadius: 8,
-    elevation: 2,
+    borderRadius: 12,
+    elevation: 3,
     marginVertical: 8,
-    padding: 8,
+    padding: 16,
     alignItems: 'center',
   },
   productImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
+    width: 120,
+    height: 120,
+    borderRadius: 12,
     marginRight: 16,
     resizeMode: 'cover',
   },
@@ -204,29 +215,40 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
     marginBottom: 8,
+    color: '#333',
   },
   itemPrice: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#007BFF',
     marginBottom: 8,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   button: {
     backgroundColor: '#007BFF',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
     marginVertical: 4,
+    flex: 1,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#FF5733',
+    marginLeft: 8,
   },
   buttonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
     textAlign: 'center',
   },
   error: {
-    color: 'red',
+    color: '#FF5733',
     textAlign: 'center',
     marginTop: 16,
   },

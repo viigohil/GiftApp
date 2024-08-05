@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, Button, ActivityIndicator, Alert, StyleSheet } from 'react-native';
+import { View, Text, Image, Button, ActivityIndicator, Alert, StyleSheet, FlatList } from 'react-native';
 import { firestore, auth } from '../firebase/firebaseConfig';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
@@ -87,13 +87,33 @@ const ProductDetailScreen = ({ route }) => {
   return (
     <View style={styles.container}>
       {product && (
-        <>
+        <View style={styles.content}>
           <Image source={imageSource} style={styles.productImage} />
           <Text style={styles.productName}>{product.name}</Text>
           <Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
           <Text style={styles.productDescription}>{product.description}</Text>
           <Button title="Add to Cart" onPress={handleAddToCart} color="#007BFF" />
-        </>
+          
+          {/* Render Reviews */}
+          {product.reviews && product.reviews.length > 0 ? (
+            <View style={styles.reviewsContainer}>
+              <Text style={styles.reviewsTitle}>Reviews:</Text>
+              <FlatList
+                data={product.reviews}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.reviewItem}>
+                    <Text style={styles.reviewAuthor}>{item.author}</Text>
+                    <Text style={styles.reviewRating}>Rating: {item.rating}</Text>
+                    <Text style={styles.reviewComment}>{item.comment}</Text>
+                  </View>
+                )}
+              />
+            </View>
+          ) : (
+            <Text style={styles.noReviews}>No reviews yet.</Text>
+          )}
+        </View>
       )}
     </View>
   );
@@ -102,8 +122,15 @@ const ProductDetailScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 16,
     backgroundColor: '#f0f0f0',
+  },
+  content: {
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 400, // Optional: to limit width on larger screens
   },
   productImage: {
     width: '100%',
@@ -116,15 +143,56 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 8,
+    textAlign: 'center',
   },
   productPrice: {
     fontSize: 20,
     color: '#007BFF',
     marginBottom: 8,
+    textAlign: 'center',
   },
   productDescription: {
     fontSize: 16,
     marginBottom: 16,
+    textAlign: 'center',
+  },
+  reviewsContainer: {
+    marginTop: 16,
+    width: '100%',
+  },
+  reviewsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  reviewItem: {
+    marginBottom: 12,
+    padding: 8,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  reviewAuthor: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  reviewRating: {
+    fontSize: 14,
+    color: '#007BFF',
+  },
+  reviewComment: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  noReviews: {
+    fontSize: 16,
+    color: '#777',
+    textAlign: 'center',
+    marginTop: 16,
   },
   error: {
     color: 'red',
